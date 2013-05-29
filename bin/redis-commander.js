@@ -53,6 +53,11 @@ var args = optimist
     boolean: true,
     describe: 'Do not save new connections to config.'
   })
+  .options('noautoconnect', {
+     alias: 'na',
+    boolean: true,
+    describe: 'Do not automatically connect to redis on start.'
+  })
   .argv;
 
 if (args.help) {
@@ -74,6 +79,7 @@ myUtils.getConfig(function (err, config) {
   if (!config.default_connections) {
     config.default_connections = [];
   }
+ if (!args['noautoconnect']) {
   startDefaultConnections(config.default_connections, function (err) {
     if (err) {
       console.log(err);
@@ -118,6 +124,7 @@ myUtils.getConfig(function (err, config) {
       setUpConnection(redisConnections.getLast(), db);
     }
   });
+ }
   return startWebApp();
 });
 
@@ -161,5 +168,6 @@ function connectToDB (redisConnection, db) {
 function startWebApp () {     
   httpServerOptions = {webPort: args.port, username: args["http-auth-username"], password: args["http-auth-password"]};
   console.log("No Save: " + args["nosave"]);
+  console.log("No Auto Connect: " + args["noautoconnect"]);
   app(httpServerOptions, redisConnections, args["nosave"]);
 }
